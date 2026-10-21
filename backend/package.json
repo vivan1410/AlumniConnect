@@ -1,0 +1,21 @@
+{
+  "name": "alumniconnect-backend",
+  "version": "1.0.0",
+  "description": "Backend API for AlumniConnect platform connected to Neo4j",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "seed": "node scripts/seed.js",
+    "test": "node scripts/test-endpoints.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "google-auth-library": "^11.3.1",
+    "neo4j-driver": "^5.28.1"
+  }
+}

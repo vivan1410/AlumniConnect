@@ -1,0 +1,1032 @@
+/* ==========================================================================
+   AlumniConnect — Exact Match Login Page
+   Strictly unified composition modeled after the reference design:
+   - Left content starts ~6.5% from left viewport edge.
+   - Right login card ends ~6.5% from right viewport edge.
+   - Left column (~1.35fr) gives natural width to headline, badges & artwork.
+   - Column gap is tightly set to 36–44px so the network graph connects to the card.
+   - Artwork sits immediately beneath the feature highlights.
+   ========================================================================== */
+
+.login-exact-page {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #FAFDFB;
+  background-image: 
+    radial-gradient(circle at 8% 15%, rgba(240, 248, 244, 0.6) 0%, transparent 45%),
+    radial-gradient(circle at 92% 85%, rgba(230, 244, 238, 0.5) 0%, transparent 45%);
+  position: relative;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* Bottom-right pastel leaf vector decoration */
+.leaf-corner-decor {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  width: clamp(90px, 8vw, 120px);
+  height: auto;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.9;
+  user-select: none;
+}
+
+/* Canvas container: balanced ~1580px composition utilizing available desktop width */
+.login-exact-canvas {
+  width: 100%;
+  max-width: 1580px;
+  margin: 0 auto;
+  padding: 1.5rem clamp(2rem, 3.5vw, 3.75rem) 1.25rem;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   TOP HEADER BAR
+   Aligned with the left and right content boundaries
+   ========================================================================== */
+
+.exact-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.exact-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.exact-logo-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background-color: #0F766E;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 2px 6px rgba(15, 118, 110, 0.25);
+}
+
+.exact-cap-svg {
+  transform: translateY(1px);
+}
+
+.exact-cap-accent-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.exact-logo-text-col {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.exact-logo-brand {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.025em;
+}
+
+.exact-logo-subtitle {
+  font-size: 0.685rem;
+  font-weight: 700;
+  color: #0D9488;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.exact-header-quote {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.quote-italic-text {
+  font-style: italic;
+  font-weight: 500;
+}
+
+.quote-heart-symbol {
+  color: #0D9488;
+  font-size: 1.1rem;
+  font-weight: 700;
+  transform: translateY(1px);
+}
+
+/* ==========================================================================
+   TWO-COLUMN MAIN GRID
+   Tightly connected with balanced column proportions and top-alignment
+   so switching modes does not cause vertical layout shifts
+   ========================================================================== */
+
+.exact-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 460px;
+  justify-content: space-between;
+  align-items: start;
+  gap: clamp(34px, 3.2vw, 54px);
+  width: 100%;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* When the login card is hidden or promotional content only */
+.exact-main-grid.promo-only,
+.exact-main-grid:not(:has(.exact-right-section)),
+.exact-main-grid:has(> .exact-left-section:only-child) {
+  grid-template-columns: 1fr;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.exact-main-grid.promo-only .exact-left-section,
+.exact-main-grid:not(:has(.exact-right-section)) .exact-left-section,
+.exact-left-section:only-child {
+  max-width: 100%;
+  align-items: center;
+  text-align: center;
+}
+
+.exact-main-grid.promo-only .exact-headline,
+.exact-main-grid:not(:has(.exact-right-section)) .exact-headline,
+.exact-left-section:only-child .exact-headline {
+  text-align: center;
+  max-width: 900px;
+}
+
+.exact-main-grid.promo-only .exact-supporting-desc,
+.exact-main-grid:not(:has(.exact-right-section)) .exact-supporting-desc,
+.exact-left-section:only-child .exact-supporting-desc {
+  text-align: center;
+  max-width: 820px;
+}
+
+.exact-main-grid.promo-only .exact-features-row,
+.exact-main-grid:not(:has(.exact-right-section)) .exact-features-row,
+.exact-left-section:only-child .exact-features-row {
+  max-width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.exact-main-grid.promo-only .exact-campus-artwork-container,
+.exact-main-grid:not(:has(.exact-right-section)) .exact-campus-artwork-container,
+.exact-left-section:only-child .exact-campus-artwork-container {
+  max-width: 920px;
+  justify-content: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ==========================================================================
+   LEFT SECTION: Natural width, tightly integrated with illustration
+   ========================================================================== */
+
+.exact-left-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  position: relative;
+}
+
+/* Pill Tag: Connect • Learn • Grow */
+.exact-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.32rem 0.9rem;
+  background-color: #EBF7F0;
+  border: 1px solid #CEEBD9;
+  color: #0F766E;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 600;
+  width: fit-content;
+  margin-left: 0;
+  margin-bottom: 0.5rem;
+}
+
+.pill-share-icon {
+  color: #0F766E;
+}
+
+/* Main Headline — Two lines */
+.exact-headline {
+  font-family: var(--font-heading);
+  font-size: clamp(2.45rem, 2.75vw, 3.25rem);
+  font-weight: 800;
+  line-height: 1.14;
+  letter-spacing: -0.03em;
+  margin-left: 0;
+  margin-bottom: 0.6rem;
+  text-align: left;
+  width: 100%;
+  max-width: min(100%, 860px);
+}
+
+.headline-dark-navy {
+  display: block;
+  color: #0F172A;
+}
+
+.headline-teal-gradient {
+  display: block;
+  color: #0D9488;
+}
+
+/* Supporting Description */
+.exact-supporting-desc {
+  font-size: 1.05rem;
+  color: #334155;
+  line-height: 1.55;
+  width: 100%;
+  max-width: min(100%, 840px);
+  margin-left: 0;
+  margin-bottom: 0.85rem;
+  text-align: left;
+}
+
+/* Four Feature Highlights — Cohesively aligned with headline width and interlocked with artwork */
+.exact-features-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(12px, 1.8vw, 24px);
+  margin-left: 0;
+  margin-bottom: 0.75rem;
+  width: 100%;
+  max-width: min(100%, 860px);
+  position: relative;
+  z-index: 2;
+}
+
+.exact-feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+.feature-icon-square {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: #EBF7F0;
+  border: 1.5px solid #D2ECE0;
+  color: #0F766E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.45rem;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.exact-feature-item:hover .feature-icon-square {
+  transform: translateY(-2px);
+  background-color: #DDF1E5;
+}
+
+.feature-title-text {
+  font-size: 0.835rem;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Campus Artwork Container: fills the left column, connects seamlessly towards the login card */
+.exact-campus-artwork-container {
+  width: 100%;
+  max-width: min(100%, 860px);
+  margin-left: 0;
+  margin-top: 0.35rem;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  position: relative;
+  z-index: 1;
+}
+
+.exact-campus-artwork-img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  object-position: left top;
+  user-select: none;
+  pointer-events: none;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  opacity: 1;
+  filter: none;
+}
+
+/* ==========================================================================
+   RIGHT SECTION: White Login Card
+   Directly adjacent to the illustration with 36–44px gap
+   ========================================================================= */
+
+.exact-right-section {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.exact-login-card {
+  background-color: #FFFFFF;
+  border: 1.5px solid #E2EFE7;
+  border-radius: 26px;
+  box-shadow: 
+    0 18px 45px rgba(15, 118, 110, 0.07),
+    0 4px 16px rgba(0, 0, 0, 0.02);
+  padding: 2.1rem 2.25rem 1.65rem;
+  width: 100%;
+  max-width: 460px;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+/* Card Header */
+.exact-card-header {
+  margin-bottom: 1.25rem;
+}
+
+.title-burst-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.card-welcome-title {
+  font-family: var(--font-heading);
+  font-size: 2.15rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.card-burst-rays {
+  color: #0D9488;
+  margin-top: -6px;
+  flex-shrink: 0;
+}
+
+.card-welcome-sub {
+  font-size: 0.925rem;
+  color: #64748B;
+  margin-top: 0.5rem;
+  line-height: 1.45;
+}
+
+/* Form */
+.exact-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05rem;
+  width: 100%;
+}
+
+.exact-input-group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.exact-input-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: #FAFCFA;
+  border: 1.5px solid #E2EFE7;
+  border-radius: 12px;
+  height: 48px;
+  padding: 0 0.85rem;
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.exact-input-shell:focus-within {
+  border-color: #0D9488;
+  background-color: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+
+.input-prefix-icon {
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.mail-icon {
+  color: #0D9488;
+}
+
+.lock-icon {
+  color: #334155;
+}
+
+.user-icon {
+  color: #0F766E;
+}
+
+.exact-field-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 0.925rem;
+  color: #0F172A;
+  outline: none;
+  font-family: inherit;
+}
+
+.exact-field-input::placeholder {
+  color: #94A3B8;
+  font-size: 0.9rem;
+}
+
+.input-helper-note {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  text-align: center;
+  margin-top: 0.35rem;
+}
+
+.exact-eye-btn {
+  background: transparent;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  transition: color var(--transition-fast);
+}
+
+.exact-eye-btn:hover {
+  color: #0F172A;
+}
+
+/* Signup extra fields */
+.signup-extra-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+}
+
+.exact-role-pills {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  background-color: #F1F7F4;
+  padding: 0.25rem;
+  border-radius: var(--radius-pill);
+  width: 100%;
+}
+
+.role-pill-btn {
+  padding: 0.45rem;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: #475569;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.role-pill-btn.active {
+  background-color: #FFFFFF;
+  color: #0F766E;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.exact-select-input {
+  width: 100%;
+  height: 48px;
+  background-color: #FAFCFA;
+  border: 1.5px solid #E2EFE7;
+  border-radius: 12px;
+  padding: 0 0.85rem;
+  font-size: 0.875rem;
+  color: #0F172A;
+  outline: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.exact-select-input:focus {
+  border-color: #0D9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+
+.exact-alumni-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.inline-sub {
+  height: 44px;
+  background-color: #FAFCFA;
+  border: 1.5px solid #E2EFE7;
+  border-radius: 10px;
+  padding: 0 0.75rem;
+  font-size: 0.85rem;
+  box-sizing: border-box;
+}
+
+.inline-sub:focus {
+  border-color: #0D9488;
+  background-color: #FFFFFF;
+}
+
+/* Remember me & Forgot Password */
+.exact-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+  width: 100%;
+}
+
+.exact-remember-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.exact-checkbox-input {
+  width: 16px;
+  height: 16px;
+  accent-color: #0F766E;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.remember-text {
+  font-size: 0.85rem;
+  color: #334155;
+  font-weight: 500;
+}
+
+.exact-forgot-link {
+  background: transparent;
+  border: none;
+  color: #0F766E;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.exact-forgot-link:hover {
+  text-decoration: underline;
+  color: #0D655E;
+}
+
+/* Alerts */
+.exact-alert {
+  padding: 0.6rem 0.85rem;
+  border-radius: 10px;
+  font-size: 0.825rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.exact-alert.error {
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #DC2626;
+}
+
+.exact-alert.success {
+  background-color: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #059669;
+}
+
+/* Sign In Button */
+.exact-btn-signin {
+  width: 100%;
+  height: 50px;
+  background: linear-gradient(135deg, #0F766E 0%, #0D6E66 100%);
+  color: #FFFFFF;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.22);
+  transition: all var(--transition-fast);
+  margin-top: 0.25rem;
+  box-sizing: border-box;
+}
+
+.exact-btn-signin:hover:not(:disabled) {
+  background: #0B5E57;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(15, 118, 110, 0.3);
+}
+
+.exact-btn-signin:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* OR Divider */
+.exact-or-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 1.15rem 0;
+  width: 100%;
+}
+
+.exact-or-divider .divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: #E2E8F0;
+}
+
+.exact-or-divider .divider-text {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94A3B8;
+  letter-spacing: 0.05em;
+}
+
+/* Continue with Google */
+.exact-btn-google {
+  width: 100%;
+  height: 48px;
+  background-color: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  color: #334155;
+  font-size: 0.925rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.exact-btn-google:hover:not(:disabled) {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  transform: translateY(-1px);
+}
+
+.exact-btn-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.exact-google-g {
+  flex-shrink: 0;
+}
+
+/* Pale-Mint Registration Panel at Bottom of Card */
+.exact-register-panel {
+  background-color: #EBF7F1;
+  border: 1px solid #D1EBE0;
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.35rem;
+  gap: 0.75rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.register-panel-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.register-sparkle-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: rgba(15, 118, 110, 0.12);
+  color: #0F766E;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.register-copy-col {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.register-title {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.register-sub {
+  font-size: 0.725rem;
+  color: #475569;
+}
+
+.exact-btn-create-account {
+  background: transparent;
+  border: none;
+  color: #0F766E;
+  font-size: 0.825rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+}
+
+.exact-btn-create-account:hover {
+  background-color: rgba(15, 118, 110, 0.08);
+  color: #0D655E;
+}
+
+/* ==========================================================================
+   PASSWORD MODAL (Info dialog for forgot password)
+   ========================================================================== */
+
+.exact-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.exact-dialog-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  max-width: 480px;
+  width: 100%;
+  padding: 1.75rem 2rem;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.dialog-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #EBF7F0;
+  color: #0F766E;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.775rem;
+  font-weight: 700;
+}
+
+.dialog-close-btn {
+  background: transparent;
+  border: none;
+  color: #64748B;
+  cursor: pointer;
+}
+
+.dialog-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 0.75rem;
+}
+
+.dialog-text {
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.55;
+  margin-bottom: 0.75rem;
+}
+
+.dialog-text code {
+  background-color: #F1F5F9;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-family: monospace;
+  color: #0F766E;
+  font-size: 0.85rem;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (Tablets & Mobile & Zoom Handling)
+   ========================================================================== */
+
+@media (max-width: 1180px) {
+  .login-exact-canvas {
+    padding: 1.25rem 2.5vw 1.5rem;
+    max-width: 100%;
+  }
+
+  .exact-main-grid {
+    grid-template-columns: minmax(0, 1.15fr) 440px;
+    gap: 28px;
+    margin-top: 0.75rem;
+  }
+
+  .exact-headline {
+    font-size: clamp(2.1rem, 2.5vw, 2.65rem);
+  }
+
+  .exact-features-row {
+    gap: 12px;
+  }
+
+  .exact-login-card {
+    padding: 1.85rem 1.65rem 1.5rem;
+    max-width: 440px;
+  }
+}
+
+@media (max-width: 880px) {
+  .login-exact-canvas {
+    min-height: auto;
+    padding: 1.25rem 1.25rem 2rem;
+  }
+
+  .exact-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .exact-header-quote {
+    display: none;
+  }
+
+  .exact-main-grid {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin: 0;
+  }
+
+  .exact-left-section {
+    order: 2;
+    align-items: center;
+    text-align: center;
+  }
+
+  .exact-right-section {
+    order: 1;
+    justify-content: center;
+  }
+
+  .exact-login-card {
+    max-width: 100%;
+    padding: 1.85rem 1.35rem 1.6rem;
+  }
+
+  .exact-headline {
+    font-size: 2.15rem;
+    text-align: center;
+  }
+
+  .exact-supporting-desc {
+    text-align: center;
+  }
+
+  .exact-features-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.85rem;
+    max-width: 420px;
+    margin: 0 auto 1rem;
+  }
+
+  .exact-campus-artwork-container {
+    max-width: 100%;
+    margin-top: 0.5rem;
+    justify-content: center;
+  }
+
+  .exact-campus-artwork-img {
+    object-position: center top;
+  }
+
+  .leaf-corner-decor {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-exact-canvas {
+    padding: 1rem 0.85rem 1.75rem;
+  }
+
+  .exact-login-card {
+    padding: 1.5rem 1rem 1.25rem;
+    border-radius: 20px;
+  }
+
+  .card-welcome-title {
+    font-size: 1.85rem;
+  }
+
+  .exact-headline {
+    font-size: 1.85rem;
+  }
+
+  .exact-features-row {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+  }
+
+  .feature-icon-square {
+    width: 38px;
+    height: 38px;
+  }
+
+  .feature-title-text {
+    font-size: 0.775rem;
+  }
+}

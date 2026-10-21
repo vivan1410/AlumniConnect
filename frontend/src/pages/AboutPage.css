@@ -1,0 +1,264 @@
+/* About Page */
+.about-page {
+  padding-bottom: 5rem;
+  background-color: var(--bg-primary);
+  min-height: calc(100vh - 72px);
+}
+
+.about-header-banner {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 3rem 0 2.5rem;
+}
+
+.about-page-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0.6rem 0 0.4rem;
+}
+
+.about-page-subtitle {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  max-width: 650px;
+}
+
+.about-content-wrap {
+  margin-top: 2.5rem;
+}
+
+/* Mission Card */
+.about-mission-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 3rem 2.5rem;
+  margin-bottom: 2.5rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.mission-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 1rem;
+}
+
+.mission-text {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+/* Pillars Grid */
+.about-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+  margin-bottom: 3.5rem;
+}
+
+.pillar-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--transition-normal);
+}
+
+.pillar-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary-border);
+}
+
+.pillar-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.pillar-icon-box.teal {
+  background-color: var(--primary-light);
+  color: var(--primary);
+}
+
+.pillar-icon-box.sage {
+  background-color: var(--accent-sage-light);
+  color: var(--accent-sage);
+}
+
+.pillar-icon-box.amber {
+  background-color: var(--accent-amber-light);
+  color: var(--accent-amber);
+}
+
+.pillar-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 0.65rem;
+}
+
+.pillar-card p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Tech Section */
+.about-tech-section {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 3rem 2.5rem;
+  margin-bottom: 2.5rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.tech-section-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.tech-section-desc {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 780px;
+  margin-bottom: 2.25rem;
+}
+
+.graph-concepts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.concept-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+}
+
+.concept-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.concept-icon {
+  color: var(--primary);
+}
+
+.concept-header h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.concept-card p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.concept-card code {
+  background-color: var(--bg-surface);
+  padding: 0.15rem 0.35rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  color: var(--primary);
+}
+
+/* Fullstack Architecture Card */
+.fullstack-arch-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem;
+  margin-bottom: 3rem;
+  box-shadow: var(--shadow-xs);
+}
+
+.arch-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.arch-icon {
+  color: var(--primary);
+}
+
+.arch-header h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.arch-flow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.flow-step {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.step-tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary);
+}
+
+.flow-step strong {
+  font-size: 1.05rem;
+  color: var(--text-main);
+}
+
+.flow-step span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.flow-arrow {
+  font-size: 1.5rem;
+  color: var(--text-light);
+  font-weight: 700;
+}
+
+/* Actions Bar */
+.about-actions-bar {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .about-pillars-grid, .graph-concepts-grid {
+    grid-template-columns: 1fr;
+  }
+  .arch-flow {
+    flex-direction: column;
+  }
+  .flow-arrow {
+    transform: rotate(90deg);
+  }
+}
