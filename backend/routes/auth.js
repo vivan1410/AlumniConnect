@@ -498,6 +498,7 @@ router.post('/register', async (req, res) => {
   const safeDept = validDepts.includes(department) ? department : 'CSE';
 
   let session;
+  let displayName = cleanName;
   try {
     session = getSession(neo4j.session.WRITE);
     // Check if email already registered
@@ -516,7 +517,6 @@ router.post('/register', async (req, res) => {
     }
 
     // Ensure name uniqueness (to satisfy constraints)
-    let displayName = cleanName;
     const collisionQuery = `
       MATCH (u) WHERE (u:Student OR u:Alumni) AND toLower(coalesce(u.name, '')) = toLower($name)
       RETURN count(u) AS cnt
