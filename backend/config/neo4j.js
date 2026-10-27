@@ -3,9 +3,13 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const uri = process.env.NEO4J_URI || 'neo4j://127.0.0.1:7687';
+const uri = process.env.NEO4J_URI || 'bolt://127.0.0.1:7687';
 const user = process.env.NEO4J_USER || 'neo4j';
-const password = process.env.NEO4J_PASSWORD || '';
+let rawPassword = process.env.NEO4J_PASSWORD || '';
+if ((rawPassword.startsWith('"') && rawPassword.endsWith('"')) || (rawPassword.startsWith("'") && rawPassword.endsWith("'"))) {
+  rawPassword = rawPassword.slice(1, -1);
+}
+const password = rawPassword;
 const database = process.env.NEO4J_DATABASE || 'neo4j';
 
 // In cloud deployment (e.g. Vercel), 127.0.0.1 cannot reach the developer laptop without a tunnel.
