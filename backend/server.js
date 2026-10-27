@@ -92,55 +92,52 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start listening only when run as a standalone process (not inside Vercel serverless function)
-let server = null;
-if (process.env.VERCEL !== '1' && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
-  server = app.listen(PORT, async () => {
-    console.log(`\n========================================`);
-    console.log(`  AlumniConnect Backend Server`);
-    console.log(`  Running on: http://localhost:${PORT}`);
-    console.log(`========================================\n`);
+// Start listening on assigned port
+const server = app.listen(PORT, async () => {
+  console.log(`\n========================================`);
+  console.log(`  AlumniConnect Backend Server`);
+  console.log(`  Running on: http://localhost:${PORT}`);
+  console.log(`========================================\n`);
 
-    console.log('Checking Neo4j database connectivity...');
-    const dbStatus = await verifyConnectivity();
-    if (dbStatus.connected) {
-      console.log(` Neo4j Connected successfully!`);
-      console.log(`  - URI: ${dbStatus.uri}`);
-      console.log(`  - Database: ${dbStatus.database}`);
-      console.log(`  - Agent: ${dbStatus.agent}\n`);
+  console.log('Checking Neo4j database connectivity...');
+  const dbStatus = await verifyConnectivity();
+  if (dbStatus.connected) {
+    console.log(` Neo4j Connected successfully!`);
+    console.log(`  - URI: ${dbStatus.uri}`);
+    console.log(`  - Database: ${dbStatus.database}`);
+    console.log(`  - Agent: ${dbStatus.agent}\n`);
 
-      // Ensure database constraints for mentorship and chat
-      const initSession = getSession();
-      try {
-        await initSession.run('CREATE CONSTRAINT mentorship_req_id IF NOT EXISTS FOR (r:MentorshipRequest) REQUIRE r.id IS UNIQUE');
-        await initSession.run('CREATE CONSTRAINT conv_id IF NOT EXISTS FOR (c:Conversation) REQUIRE c.id IS UNIQUE');
-        await initSession.run('CREATE CONSTRAINT msg_id IF NOT EXISTS FOR (m:Message) REQUIRE m.id IS UNIQUE');
-      } catch (e) {
-        // Constraints notice
-      } finally {
-        await initSession.close();
-      }
-    } else {
-      console.warn(` Neo4j Connection Notice:`);
-      console.warn(`  - Error: ${dbStatus.error}`);
-      console.warn(`  - Action: Update NEO4J_PASSWORD in backend/.env if needed.\n`);
+    // Ensure database constraints for mentorship and chat
+    const initSession = getSession();
+    try {
+      await initSession.run('CREATE CONSTRAINT mentorship_req_id IF NOT EXISTS FOR (r:MentorshipRequest) REQUIRE r.id IS UNIQUE');
+      await initSession.run('CREATE CONSTRAINT conv_id IF NOT EXISTS FOR (c:Conversation) REQUIRE c.id IS UNIQUE');
+      await initSession.run('CREATE CONSTRAINT msg_id IF NOT EXISTS FOR (m:Message) REQUIRE m.id IS UNIQUE');
+    } catch (e) {
+      // Constraints notice
+    } finally {
+      await initSession.close();
     }
-  });
+  } else {
+    console.warn(` Neo4j Connection Notice:`);
+    console.warn(`  - Error: ${dbStatus.error}`);
+    console.warn(`  - Action: Update NEO4J_PASSWORD in backend/.env if needed.\n`);
+  }
+});
 
-  // Graceful shutdown handling
-  const shutdown = async () => {
-    console.log('\nShutting down AlumniConnect server...');
-    if (server) {
-      server.close(async () => {
-        await closeDriver();
-        console.log('Closed Neo4j driver connection. Process exiting.');
-        process.exit(0);
-      });
-    }
-  };
+// Graceful shutdown handling
+const shutdown = async () => {
+  console.log('\nShutting down AlumniConnect server...');
+  if (server) {
+    server.close(async () => {
+      await closeDriver();
+      console.log('Closed Neo4j driver connection. Process exiting.');
+      process.exit(0);
+    });
+  }
+};
 
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
-}
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
 
 export default app;
