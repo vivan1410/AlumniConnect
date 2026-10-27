@@ -6,6 +6,7 @@
   "scripts": {
     "build": "npm --prefix frontend install && npm --prefix frontend run build",
     "start": "node backend/server.js",
+    "dev": "concurrently -n \"backend,frontend\" -c \"cyan,magenta\" \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "node --watch backend/server.js",
     "dev:frontend": "npm --prefix frontend run dev",
     "seed": "node backend/scripts/seed.js"
@@ -17,5 +18,8 @@
     "express": "^4.21.2",
     "google-auth-library": "^11.3.1",
     "neo4j-driver": "^5.28.1"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
   }
 }
