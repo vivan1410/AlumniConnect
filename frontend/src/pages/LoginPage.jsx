@@ -55,8 +55,11 @@ export default function LoginPage({
     setSuccessMsg(null);
   }, [initialMode]);
 
-  // Google OAuth Client ID from environment
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  // Google OAuth Client ID from environment or verified university project default
+  const googleClientId =
+    import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+    '171207816264-qtilvff2hrtfchshgmcth1ir169nuujm.apps.googleusercontent.com';
+
   const isGoogleConfigured = Boolean(
     googleClientId &&
     googleClientId !== 'YOUR_GOOGLE_WEB_CLIENT_ID' &&
