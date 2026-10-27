@@ -82,7 +82,7 @@ export default function LoginPage({
 
         const response = await api.register(payload);
 
-        if (response.ok && response.data.success) {
+        if (response.ok && response.data?.success) {
           setSuccessMsg(`Welcome, ${userName}! Setting up your campus profile...`);
           const authData = response.data?.data || {};
           const newUser = {
@@ -122,7 +122,7 @@ export default function LoginPage({
           department,
         });
 
-        if (loginRes.ok && loginRes.data.success) {
+        if (loginRes.ok && loginRes.data?.success) {
           const authUser = loginRes.data.data;
           if (authUser?.token) {
             api.setAuthToken(authUser.token);
