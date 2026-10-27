@@ -347,9 +347,9 @@ router.post('/login', async (req, res) => {
     });
   }
 
-  const session = getSession(neo4j.session.WRITE);
-
+  let session;
   try {
+    session = getSession(neo4j.session.WRITE);
     // Strictly lookup user by verified email (never loose display-name match)
     const findQuery = `
       MATCH (u)
@@ -497,8 +497,9 @@ router.post('/register', async (req, res) => {
   const validDepts = ['CSE', 'IT', 'ECE', 'Mechanical'];
   const safeDept = validDepts.includes(department) ? department : 'CSE';
 
-  const session = getSession(neo4j.session.WRITE);
+  let session;
   try {
+    session = getSession(neo4j.session.WRITE);
     // Check if email already registered
     const existingQuery = `
       MATCH (u)

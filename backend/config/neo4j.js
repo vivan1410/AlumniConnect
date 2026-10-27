@@ -18,7 +18,12 @@ let driver = null;
 
 export function getDriver() {
   if (isLocalInCloud) {
-    throw new Error('Local Neo4j 127.0.0.1 is unreachable from Vercel cloud without a tunnel.');
+    return {
+      getServerInfo: async () => {
+        throw new Error('Neo4j local URI (127.0.0.1) cannot be reached from Vercel cloud without a tunnel.');
+      },
+      close: async () => {},
+    };
   }
 
   if (!driver) {
@@ -36,7 +41,12 @@ export function getDriver() {
  */
 export function getSession(mode = neo4j.session.READ) {
   if (isLocalInCloud) {
-    throw new Error('Local Neo4j 127.0.0.1 is unreachable from Vercel cloud without a tunnel.');
+    return {
+      run: async () => {
+        throw new Error('Neo4j local URI (127.0.0.1) cannot be reached from Vercel cloud without a tunnel.');
+      },
+      close: async () => {},
+    };
   }
   const currentDriver = getDriver();
   return currentDriver.session({
