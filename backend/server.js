@@ -92,12 +92,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start listening on assigned port
-const server = app.listen(PORT, async () => {
-  console.log(`\n========================================`);
-  console.log(`  AlumniConnect Backend Server`);
-  console.log(`  Running on: http://localhost:${PORT}`);
-  console.log(`========================================\n`);
+// Start listening on assigned port when running as a standalone server
+let server = null;
+if (!process.env.VERCEL) {
+  server = app.listen(PORT, async () => {
+    console.log(`\n========================================`);
+    console.log(`  AlumniConnect Backend Server`);
+    console.log(`  Running on: http://localhost:${PORT}`);
+    console.log(`========================================\n`);
 
   console.log('Checking Neo4j database connectivity...');
   const dbStatus = await verifyConnectivity();
@@ -124,6 +126,7 @@ const server = app.listen(PORT, async () => {
     console.warn(`  - Action: Update NEO4J_PASSWORD in backend/.env if needed.\n`);
   }
 });
+}
 
 // Graceful shutdown handling
 const shutdown = async () => {
