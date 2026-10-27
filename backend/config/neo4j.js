@@ -8,14 +8,24 @@ const user = process.env.NEO4J_USER || 'neo4j';
 const password = process.env.NEO4J_PASSWORD || '';
 const database = process.env.NEO4J_DATABASE || 'neo4j';
 
+// In cloud deployment (e.g. Vercel), 127.0.0.1 cannot reach the developer laptop without a tunnel.
+// Detecting this immediately avoids 5000ms TCP socket hangs and makes all API responses instant.
+const isLocalInCloud =
+  Boolean(process.env.VERCEL) &&
+  (uri.includes('127.0.0.1') || uri.includes('localhost'));
+
 let driver = null;
 
 export function getDriver() {
+  if (isLocalInCloud) {
+    throw new Error('Local Neo4j 127.0.0.1 is unreachable from Vercel cloud without a tunnel.');
+  }
+
   if (!driver) {
     driver = neo4j.driver(uri, neo4j.auth.basic(user, password), {
       disableLosslessIntegers: true, // Converts Neo4j Integers automatically to JavaScript numbers
-      maxConnectionPoolSize: 50,
-      connectionTimeout: 5000,
+      maxConnectionPoolSize: 25,
+      connectionTimeout: 2000,
     });
   }
   return driver;
@@ -25,6 +35,9 @@ export function getDriver() {
  * Creates and returns a new session for the configured database.
  */
 export function getSession(mode = neo4j.session.READ) {
+  if (isLocalInCloud) {
+    throw new Error('Local Neo4j 127.0.0.1 is unreachable from Vercel cloud without a tunnel.');
+  }
   const currentDriver = getDriver();
   return currentDriver.session({
     database,
@@ -37,8 +50,19 @@ export function getSession(mode = neo4j.session.READ) {
  * Returns detailed status information.
  */
 export async function verifyConnectivity() {
-  const currentDriver = getDriver();
+  if (isLocalInCloud) {
+    return {
+      connected: false,
+      uri,
+      user,
+      database,
+      error: 'Neo4j local URI (127.0.0.1) cannot be reached from Vercel cloud. Presentation fallback data active.',
+      code: 'LOCAL_IP_IN_CLOUD',
+    };
+  }
+
   try {
+    const currentDriver = getDriver();
     const serverInfo = await currentDriver.getServerInfo();
     return {
       connected: true,
