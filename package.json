@@ -1,0 +1,21 @@
+{
+  "name": "alumniconnect",
+  "version": "1.0.0",
+  "description": "AlumniConnect - College Graph Database Platform with Neo4j & React",
+  "type": "module",
+  "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build",
+    "start": "node backend/server.js",
+    "dev:backend": "node --watch backend/server.js",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "seed": "node backend/scripts/seed.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "google-auth-library": "^11.3.1",
+    "neo4j-driver": "^5.28.1"
+  }
+}

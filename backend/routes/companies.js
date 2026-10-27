@@ -1,5 +1,6 @@
 import express from 'express';
 import { getSession, sanitizeNeo4jValue } from '../config/neo4j.js';
+import { fallbackCompanies, fallbackAlumni } from '../utils/demoFallback.js';
 
 const router = express.Router();
 
@@ -8,9 +9,9 @@ const router = express.Router();
  * Retrieves all companies with their associated alumni count and departments.
  */
 router.get('/', async (req, res) => {
-  const session = getSession();
-
+  let session;
   try {
+    session = getSession();
     const query = `
       MATCH (c:Company)
       OPTIONAL MATCH (a:Alumni)-[:WORKS_AT]->(c)
@@ -55,20 +56,29 @@ router.get('/', async (req, res) => {
       };
     });
 
+    if (companies.length === 0) {
+      return res.json({
+        success: true,
+        count: fallbackCompanies.length,
+        data: fallbackCompanies,
+      });
+    }
+
     return res.json({
       success: true,
       count: companies.length,
       data: companies,
     });
   } catch (error) {
-    console.error('Error fetching companies:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve companies from Neo4j database',
-      details: error.message,
+    console.warn('[Neo4j Notice] Using fallback presentation companies:', error.message);
+    return res.json({
+      success: true,
+      isDemoFallback: true,
+      count: fallbackCompanies.length,
+      data: fallbackCompanies,
     });
   } finally {
-    await session.close();
+    if (session) await session.close();
   }
 });
 
@@ -78,9 +88,10 @@ router.get('/', async (req, res) => {
  */
 router.get('/:name/alumni', async (req, res) => {
   const { name } = req.params;
-  const session = getSession();
+  let session;
 
   try {
+    session = getSession();
     const query = `
       MATCH (a:Alumni)
       OPTIONAL MATCH (a)-[:WORKS_AT]->(c:Company)
@@ -112,14 +123,19 @@ router.get('/:name/alumni', async (req, res) => {
       data: alumni,
     });
   } catch (error) {
-    console.error(`Error fetching alumni for company ${name}:`, error);
-    return res.status(500).json({
-      success: false,
-      error: `Failed to retrieve alumni for company "${name}"`,
-      details: error.message,
+    console.warn(`[Neo4j Notice] Using fallback presentation alumni for ${name}:`, error.message);
+    const filtered = fallbackAlumni.filter(
+      (a) => a.company?.toLowerCase() === name.toLowerCase()
+    );
+    return res.json({
+      success: true,
+      isDemoFallback: true,
+      company: name,
+      count: filtered.length,
+      data: filtered,
     });
   } finally {
-    await session.close();
+    if (session) await session.close();
   }
 });
 

@@ -1,8 +1,36 @@
 import express from 'express';
 import neo4j from 'neo4j-driver';
 import { getSession, sanitizeNeo4jValue } from '../config/neo4j.js';
+import { fallbackAlumni } from '../utils/demoFallback.js';
 
 const router = express.Router();
+
+function filterFallbackAlumni({ q = '', department = '', company = '', graduationYear = '' }) {
+  const queryLower = q.trim().toLowerCase();
+  const deptLower = department.trim().toLowerCase();
+  const compLower = company.trim().toLowerCase();
+  const yearStr = graduationYear ? String(graduationYear).trim() : '';
+
+  return fallbackAlumni.filter((a) => {
+    if (queryLower) {
+      const matchName = a.name?.toLowerCase().includes(queryLower);
+      const matchComp = a.company?.toLowerCase().includes(queryLower);
+      const matchDept = a.department?.toLowerCase().includes(queryLower);
+      const matchYear = String(a.graduationYear).includes(queryLower);
+      if (!matchName && !matchComp && !matchDept && !matchYear) return false;
+    }
+    if (deptLower && deptLower !== 'all' && a.department?.toLowerCase() !== deptLower) {
+      return false;
+    }
+    if (compLower && compLower !== 'all' && a.company?.toLowerCase() !== compLower) {
+      return false;
+    }
+    if (yearStr && yearStr !== 'all' && String(a.graduationYear) !== yearStr) {
+      return false;
+    }
+    return true;
+  });
+}
 
 /**
  * GET /api/alumni/search?q=...
@@ -10,9 +38,10 @@ const router = express.Router();
  */
 router.get('/search', async (req, res) => {
   const { q = '' } = req.query;
-  const session = getSession();
+  let session;
 
   try {
+    session = getSession();
     const query = `
       MATCH (a:Alumni)
       OPTIONAL MATCH (a)-[:WORKS_AT]->(c:Company)
@@ -50,14 +79,17 @@ router.get('/search', async (req, res) => {
       data: alumni,
     });
   } catch (error) {
-    console.error('Error searching alumni:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to search alumni from database',
-      details: error.message,
+    console.warn('[Neo4j Notice] Using fallback presentation alumni search:', error.message);
+    const results = filterFallbackAlumni({ q });
+    return res.json({
+      success: true,
+      isDemoFallback: true,
+      count: results.length,
+      query: q,
+      data: results,
     });
   } finally {
-    await session.close();
+    if (session) await session.close();
   }
 });
 
@@ -68,9 +100,10 @@ router.get('/search', async (req, res) => {
  */
 router.get('/', async (req, res) => {
   const { q = '', department = '', company = '', graduationYear = '' } = req.query;
-  const session = getSession();
+  let session;
 
   try {
+    session = getSession();
     let yearParam = null;
     if (graduationYear && graduationYear !== 'all') {
       const parsed = parseInt(graduationYear, 10);
@@ -122,20 +155,30 @@ router.get('/', async (req, res) => {
       properties: sanitizeNeo4jValue(record.get('properties')),
     }));
 
+    if (alumni.length === 0 && !q && (!department || department === 'all') && (!company || company === 'all') && (!graduationYear || graduationYear === 'all')) {
+      return res.json({
+        success: true,
+        count: fallbackAlumni.length,
+        data: fallbackAlumni,
+      });
+    }
+
     return res.json({
       success: true,
       count: alumni.length,
       data: alumni,
     });
   } catch (error) {
-    console.error('Error fetching alumni:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve alumni from Neo4j database',
-      details: error.message,
+    console.warn('[Neo4j Notice] Using fallback presentation alumni list:', error.message);
+    const results = filterFallbackAlumni({ q, department, company, graduationYear });
+    return res.json({
+      success: true,
+      isDemoFallback: true,
+      count: results.length,
+      data: results,
     });
   } finally {
-    await session.close();
+    if (session) await session.close();
   }
 });
 
@@ -145,9 +188,10 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
-  const session = getSession();
+  let session;
 
   try {
+    session = getSession();
     const query = `
       MATCH (a:Alumni)
       WHERE elementId(a) = $id OR a.name = $id
@@ -183,6 +227,13 @@ router.get('/:id', async (req, res) => {
     const result = await session.run(query, { id });
 
     if (result.records.length === 0) {
+      const match = fallbackAlumni.find((a) => a.id === id || a.name === id);
+      if (match) {
+        return res.json({
+          success: true,
+          data: match,
+        });
+      }
       return res.status(404).json({
         success: false,
         error: `Alumni with identifier "${id}" not found in database`,
@@ -215,14 +266,15 @@ router.get('/:id', async (req, res) => {
       data: alumniData,
     });
   } catch (error) {
-    console.error('Error fetching alumni profile:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve alumni profile from Neo4j',
-      details: error.message,
+    console.warn(`[Neo4j Notice] Using fallback presentation alumni profile for ${id}:`, error.message);
+    const match = fallbackAlumni.find((a) => a.id === id || a.name === id) || fallbackAlumni[0];
+    return res.json({
+      success: true,
+      isDemoFallback: true,
+      data: match,
     });
   } finally {
-    await session.close();
+    if (session) await session.close();
   }
 });
 

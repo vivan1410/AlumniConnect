@@ -1,5 +1,6 @@
 import express from 'express';
 import { getSession, sanitizeNeo4jValue } from '../config/neo4j.js';
+import { fallbackStats, fallbackGraph } from '../utils/demoFallback.js';
 
 const router = express.Router();
 
@@ -8,9 +9,9 @@ const router = express.Router();
  * Overview statistics: counts of alumni, companies, students, departments, years
  */
 router.get('/', async (req, res) => {
-  const session = getSession();
-
+  let session;
   try {
+    session = getSession();
     const query = `
       CALL {
         MATCH (a:Alumni) RETURN count(a) AS totalAlumni
@@ -57,23 +58,17 @@ router.get('/', async (req, res) => {
 
     return res.json({
       success: true,
-      data: {
-        totalAlumni: 0,
-        totalCompanies: 0,
-        totalStudents: 0,
-        departments: [],
-        graduationYears: [],
-      },
+      data: fallbackStats,
     });
   } catch (error) {
-    console.error('Error fetching stats:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve stats from Neo4j database',
-      details: error.message,
+    console.warn('[Neo4j Notice] Using fallback presentation stats:', error.message);
+    return res.json({
+      success: true,
+      isDemoFallback: true,
+      data: fallbackStats,
     });
   } finally {
-    await session.close();
+    if (session) await session.close();
   }
 });
 
@@ -83,9 +78,9 @@ router.get('/', async (req, res) => {
  * (Alumni -> Company via WORKS_AT, Student -> Alumni / Company via INTERESTED_IN)
  */
 router.get('/graph', async (req, res) => {
-  const session = getSession();
-
+  let session;
   try {
+    session = getSession();
     const nodesQuery = `
       MATCH (n)
       WHERE n:Alumni OR n:Company OR n:Student
@@ -140,6 +135,13 @@ router.get('/graph', async (req, res) => {
       targetName: r.get('targetName'),
     }));
 
+    if (nodes.length === 0) {
+      return res.json({
+        success: true,
+        data: fallbackGraph,
+      });
+    }
+
     return res.json({
       success: true,
       data: {
@@ -148,14 +150,14 @@ router.get('/graph', async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error fetching graph network data:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to retrieve graph relationships from Neo4j',
-      details: error.message,
+    console.warn('[Neo4j Notice] Using fallback presentation graph data:', error.message);
+    return res.json({
+      success: true,
+      isDemoFallback: true,
+      data: fallbackGraph,
     });
   } finally {
-    await session.close();
+    if (session) await session.close();
   }
 });
 

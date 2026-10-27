@@ -16,17 +16,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Enable CORS for frontend development (supports ports 5175, 5173, 3000)
+// Enable CORS for frontend development and production deployments (including *.vercel.app)
 app.use(
   cors({
-    origin: [
-      'http://localhost:5175',
-      'http://127.0.0.1:5175',
-      'http://localhost:5173',
-      'http://127.0.0.1:5173',
-      'http://localhost:3000',
-      'http://127.0.0.1:3000',
-    ],
+    origin: true,
     credentials: true,
   })
 );
@@ -43,14 +36,24 @@ app.use((req, res, next) => {
   next();
 });
 
-// Mount API routes
-app.use('/api/health', healthRouter);
-app.use('/api/alumni', alumniRouter);
-app.use('/api/companies', companiesRouter);
-app.use('/api/stats', statsRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/mentorship', mentorshipRouter);
-app.use('/api/chat', chatRouter);
+// Helper to register API routes on both /api and root paths
+const registerRoutes = (router) => {
+  router.use('/health', healthRouter);
+  router.use('/alumni', alumniRouter);
+  router.use('/companies', companiesRouter);
+  router.use('/stats', statsRouter);
+  router.use('/auth', authRouter);
+  router.use('/mentorship', mentorshipRouter);
+  router.use('/chat', chatRouter);
+};
+
+// Mount API routes with /api prefix
+const apiRouter = express.Router();
+registerRoutes(apiRouter);
+app.use('/api', apiRouter);
+
+// Also mount directly on app for serverless rewrites where /api might be stripped
+registerRoutes(app);
 
 // Root informational endpoint
 app.get('/', (req, res) => {
@@ -89,50 +92,55 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start listening
-const server = app.listen(PORT, async () => {
-  console.log(`\n========================================`);
-  console.log(`  AlumniConnect Backend Server`);
-  console.log(`  Running on: http://localhost:${PORT}`);
-  console.log(`========================================\n`);
+// Start listening only when run as a standalone process (not inside Vercel serverless function)
+let server = null;
+if (process.env.VERCEL !== '1' && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+  server = app.listen(PORT, async () => {
+    console.log(`\n========================================`);
+    console.log(`  AlumniConnect Backend Server`);
+    console.log(`  Running on: http://localhost:${PORT}`);
+    console.log(`========================================\n`);
 
-  console.log('Checking Neo4j database connectivity...');
-  const dbStatus = await verifyConnectivity();
-  if (dbStatus.connected) {
-    console.log(` Neo4j Connected successfully!`);
-    console.log(`  - URI: ${dbStatus.uri}`);
-    console.log(`  - Database: ${dbStatus.database}`);
-    console.log(`  - Agent: ${dbStatus.agent}\n`);
+    console.log('Checking Neo4j database connectivity...');
+    const dbStatus = await verifyConnectivity();
+    if (dbStatus.connected) {
+      console.log(` Neo4j Connected successfully!`);
+      console.log(`  - URI: ${dbStatus.uri}`);
+      console.log(`  - Database: ${dbStatus.database}`);
+      console.log(`  - Agent: ${dbStatus.agent}\n`);
 
-    // Ensure database constraints for mentorship and chat
-    const initSession = getSession();
-    try {
-      await initSession.run('CREATE CONSTRAINT mentorship_req_id IF NOT EXISTS FOR (r:MentorshipRequest) REQUIRE r.id IS UNIQUE');
-      await initSession.run('CREATE CONSTRAINT conv_id IF NOT EXISTS FOR (c:Conversation) REQUIRE c.id IS UNIQUE');
-      await initSession.run('CREATE CONSTRAINT msg_id IF NOT EXISTS FOR (m:Message) REQUIRE m.id IS UNIQUE');
-    } catch (e) {
-      // Constraints notice
-    } finally {
-      await initSession.close();
+      // Ensure database constraints for mentorship and chat
+      const initSession = getSession();
+      try {
+        await initSession.run('CREATE CONSTRAINT mentorship_req_id IF NOT EXISTS FOR (r:MentorshipRequest) REQUIRE r.id IS UNIQUE');
+        await initSession.run('CREATE CONSTRAINT conv_id IF NOT EXISTS FOR (c:Conversation) REQUIRE c.id IS UNIQUE');
+        await initSession.run('CREATE CONSTRAINT msg_id IF NOT EXISTS FOR (m:Message) REQUIRE m.id IS UNIQUE');
+      } catch (e) {
+        // Constraints notice
+      } finally {
+        await initSession.close();
+      }
+    } else {
+      console.warn(` Neo4j Connection Notice:`);
+      console.warn(`  - Error: ${dbStatus.error}`);
+      console.warn(`  - Action: Update NEO4J_PASSWORD in backend/.env if needed.\n`);
     }
-  } else {
-    console.warn(` Neo4j Connection Notice:`);
-    console.warn(`  - Error: ${dbStatus.error}`);
-    console.warn(`  - Action: Update NEO4J_PASSWORD in backend/.env if needed.\n`);
-  }
-});
-
-// Graceful shutdown handling
-const shutdown = async () => {
-  console.log('\nShutting down AlumniConnect server...');
-  server.close(async () => {
-    await closeDriver();
-    console.log('Closed Neo4j driver connection. Process exiting.');
-    process.exit(0);
   });
-};
 
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+  // Graceful shutdown handling
+  const shutdown = async () => {
+    console.log('\nShutting down AlumniConnect server...');
+    if (server) {
+      server.close(async () => {
+        await closeDriver();
+        console.log('Closed Neo4j driver connection. Process exiting.');
+        process.exit(0);
+      });
+    }
+  };
+
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+}
 
 export default app;
