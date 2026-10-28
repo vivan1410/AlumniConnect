@@ -45,12 +45,160 @@ export default function LoginPage({
   const [successMsg, setSuccessMsg] = useState(null);
   const [forgotModalOpen, setForgotModalOpen] = useState(false);
 
+  // Read Google Client ID from Vite environment
+  const googleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+  const googleHiddenBtnRef = useRef(null);
+
+  // Keep a ref of form state so async Google callback always receives latest registration metadata
+  const formStateRef = useRef({ role, department, company, graduationYear });
+  useEffect(() => {
+    formStateRef.current = { role, department, company, graduationYear };
+  }, [role, department, company, graduationYear]);
+
   // Sync mode if initialMode prop changes
   useEffect(() => {
     setMode(initialMode);
     setAuthError(null);
     setSuccessMsg(null);
   }, [initialMode]);
+
+  // Handle Google Identity Services credential response
+  const handleGoogleCredentialResponse = async (response) => {
+    if (!response || !response.credential) {
+      setAuthError('No Google credential returned. Please try again.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    setIsSubmitting(true);
+    setAuthError(null);
+    setSuccessMsg(null);
+
+    const { role: curRole, department: curDept, company: curCompany, graduationYear: curGradYear } = formStateRef.current;
+
+    try {
+      const res = await api.googleLogin(response.credential, {
+        requestedRole: curRole,
+        requestedDepartment: curDept,
+        requestedCompany: curRole === 'Alumni' ? curCompany.trim() : '',
+        requestedGraduationYear: curRole === 'Alumni' ? curGradYear : '',
+      });
+
+      if (res.ok && res.data?.success) {
+        const authUser = res.data.data;
+        if (authUser?.token) {
+          api.setAuthToken(authUser.token);
+        }
+        setSuccessMsg(`Welcome, ${authUser.name}! Signed in with Google.`);
+        if (onLoginSuccess) {
+          onLoginSuccess(authUser);
+        }
+      } else {
+        setAuthError(res.data?.error || 'Google authentication failed. Please verify your account.');
+      }
+    } catch (err) {
+      setAuthError(err.message || 'Google authentication request failed. Please check your network.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Initialize Google Identity Services
+  useEffect(() => {
+    if (!googleClientId) return;
+
+    let initInterval = null;
+
+    const setupGsi = () => {
+      if (typeof window !== 'undefined' && window.google?.accounts?.id) {
+        try {
+          window.google.accounts.id.initialize({
+            client_id: googleClientId,
+            callback: handleGoogleCredentialResponse,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
+
+          if (googleHiddenBtnRef.current) {
+            googleHiddenBtnRef.current.innerHTML = '';
+            window.google.accounts.id.renderButton(googleHiddenBtnRef.current, {
+              type: 'standard',
+              theme: 'outline',
+              size: 'large',
+            });
+          }
+
+          if (initInterval) clearInterval(initInterval);
+        } catch (e) {
+          console.warn('[GIS] Initialization notice:', e);
+        }
+      }
+    };
+
+    setupGsi();
+    initInterval = setInterval(setupGsi, 500);
+    const timeout = setTimeout(() => {
+      if (initInterval) clearInterval(initInterval);
+    }, 4000);
+
+    return () => {
+      if (initInterval) clearInterval(initInterval);
+      clearTimeout(timeout);
+    };
+  }, [googleClientId]);
+
+  // Google OAuth Button Click Handler
+  const handleGoogleSignIn = () => {
+    if (isSubmitting) return;
+
+    setAuthError(null);
+    setSuccessMsg(null);
+
+    // 1. Check if configured
+    if (!googleClientId) {
+      setAuthError(
+        'Google Sign-In is not configured yet. Please configure VITE_GOOGLE_CLIENT_ID in your environment variables.'
+      );
+      return;
+    }
+
+    // 2. Check if GIS is loaded
+    if (typeof window === 'undefined' || !window.google?.accounts?.id) {
+      setAuthError(
+        'Google Identity Services is still loading or blocked by your browser. Please check your connection and reload.'
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    // Safety timeout in case popup is closed by user without interacting
+    const onWindowFocus = () => {
+      setTimeout(() => {
+        setIsSubmitting((prev) => (prev ? false : prev));
+      }, 1500);
+    };
+    window.addEventListener('focus', onWindowFocus, { once: true });
+
+    // 3. Trigger genuine Google Sign-In popup
+    try {
+      const renderedGsiBtn = googleHiddenBtnRef.current?.querySelector('div[role=button]');
+      if (renderedGsiBtn) {
+        renderedGsiBtn.click();
+      } else {
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            setAuthError('Google Sign-In popup was dismissed or blocked by the browser.');
+            setIsSubmitting(false);
+          }
+        });
+      }
+    } catch (err) {
+      console.warn('[GIS] Prompt invocation error:', err);
+      setAuthError('Failed to open Google Sign-In. Please check your browser popup settings.');
+      setIsSubmitting(false);
+    }
+  };
 
   // Form Submission
   const handleSubmit = async (e) => {
@@ -471,7 +619,48 @@ export default function LoginPage({
                   </button>
                 </form>
 
+                {/* Subtle OR Divider */}
+                <div className="exact-or-divider">
+                  <span className="divider-line" />
+                  <span className="divider-text">OR</span>
+                  <span className="divider-line" />
+                </div>
 
+                {/* White Outlined Continue with Google Button */}
+                <button
+                  type="button"
+                  className="exact-btn-google"
+                  onClick={handleGoogleSignIn}
+                  disabled={isSubmitting}
+                >
+                  <svg className="exact-google-g" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+
+                {/* Hidden Google Identity Services native button anchor */}
+                <div
+                  ref={googleHiddenBtnRef}
+                  id="gsi-hidden-wrapper"
+                  style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', width: 0, height: 0, overflow: 'hidden' }}
+                  aria-hidden="true"
+                />
 
                 {/* Pale-Mint Registration Panel at Bottom of Card */}
                 <div className="exact-register-panel">
